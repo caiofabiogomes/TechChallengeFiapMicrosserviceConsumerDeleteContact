@@ -1,5 +1,5 @@
 using MassTransit;
-using TechChallengeFiapMicrosserviceConsumerDeleteContact;
+using TCFiapConsumerDeleteContact.API;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>

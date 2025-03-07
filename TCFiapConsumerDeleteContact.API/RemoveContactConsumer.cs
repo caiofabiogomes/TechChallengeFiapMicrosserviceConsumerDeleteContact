@@ -1,7 +1,7 @@
 ﻿using MassTransit;
-using TechChallengeFiapMicrosserviceConsumerDeleteContact.Model;
+using TCFiapConsumerDeleteContact.API.Model;
 
-namespace TechChallengeFiapMicrosserviceConsumerDeleteContact
+namespace TCFiapConsumerDeleteContact.API
 {
     public class RemoveContactConsumer : IConsumer<RemoveContactMessage>
     {

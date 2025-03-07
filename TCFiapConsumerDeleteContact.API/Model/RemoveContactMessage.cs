@@ -1,4 +1,4 @@
-﻿namespace TechChallengeFiapMicrosserviceConsumerDeleteContact.Model
+﻿namespace TCFiapConsumerDeleteContact.API.Model
 {
     public class RemoveContactMessage
     {

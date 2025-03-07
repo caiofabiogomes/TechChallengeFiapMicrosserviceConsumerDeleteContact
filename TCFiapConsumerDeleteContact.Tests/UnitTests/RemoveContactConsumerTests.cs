@@ -1,8 +1,8 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 using Moq;
-using TechChallengeFiapMicrosserviceConsumerDeleteContact;
-using TechChallengeFiapMicrosserviceConsumerDeleteContact.Model;
+using TCFiapConsumerDeleteContact.API;
+using TCFiapConsumerDeleteContact.API.Model;
 
 namespace TCFiapConsumerDeleteContact.Tests.UnitTests
 {

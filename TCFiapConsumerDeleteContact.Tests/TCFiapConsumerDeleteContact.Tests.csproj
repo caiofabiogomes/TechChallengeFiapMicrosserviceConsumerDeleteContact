@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TCFiapConsumerDeleteContact.API\TCFiapConsumerDeleteContact.API.csproj" />
     <ProjectReference Include="..\TechChallengeFiapMicrosserviceConsumerDeleteContact\TechChallengeFiapMicrosserviceConsumerDeleteContact.csproj" />
   </ItemGroup>
 

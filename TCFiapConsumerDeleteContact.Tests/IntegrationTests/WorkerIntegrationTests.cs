@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using TechChallengeFiapMicrosserviceConsumerDeleteContact;
-using TechChallengeFiapMicrosserviceConsumerDeleteContact.Model;
+using TCFiapConsumerDeleteContact.API;
+using TCFiapConsumerDeleteContact.API.Model;
 
 namespace TCFiapConsumerDeleteContact.Tests.IntegrationTests
 {

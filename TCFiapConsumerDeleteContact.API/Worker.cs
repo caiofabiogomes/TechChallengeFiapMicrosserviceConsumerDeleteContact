@@ -1,6 +1,6 @@
 using MassTransit;
 
-namespace TechChallengeFiapMicrosserviceConsumerDeleteContact
+namespace TCFiapConsumerDeleteContact.API
 {
     public class Worker : BackgroundService
     {
