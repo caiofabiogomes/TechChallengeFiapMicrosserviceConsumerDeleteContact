@@ -1,9 +1,12 @@
 using MassTransit;
 using TCFiapConsumerDeleteContact.API;
+using TechChallenge.SDK;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
+        services.RegisterSdkModule(hostContext.Configuration);
+
         services.AddMassTransit(x =>
         {
             x.AddConsumer<RemoveContactConsumer>();

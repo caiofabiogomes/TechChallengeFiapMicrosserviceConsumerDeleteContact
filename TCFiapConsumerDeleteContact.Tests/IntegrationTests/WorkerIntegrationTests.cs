@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TCFiapConsumerDeleteContact.API;
 using TCFiapConsumerDeleteContact.API.Model;
+using TechChallenge.SDK.Persistence;
 
 namespace TCFiapConsumerDeleteContact.Tests.IntegrationTests
 {
@@ -12,45 +13,44 @@ namespace TCFiapConsumerDeleteContact.Tests.IntegrationTests
     public class WorkerIntegrationTests
     {
         private IHost _host;
-        private IBus _bus;
         private IServiceScope _scope;
-        private ILogger<Worker> _logger;
 
         [SetUp]
         public async Task SetUp()
         {
-            _host = Host.CreateDefaultBuilder()
-                .ConfigureServices((_, services) =>
-                {
-                    services.AddMassTransit(x =>
+            try
+            {
+                _host = Host.CreateDefaultBuilder()
+                    .ConfigureServices((context, services) =>
                     {
-                        x.AddConsumer<RemoveContactConsumer>();
+                        var contactRepositoryMock = new Mock<IContactRepository>();
+                        services.AddSingleton(contactRepositoryMock.Object);
 
-                        x.UsingRabbitMq((context, cfg) =>
+
+                        services.AddMassTransit(x =>
                         {
-                            cfg.Host("rabbitmq://localhost", h =>
+                            x.AddConsumer<RemoveContactConsumer>();
+                            x.UsingInMemory((context, cfg) =>
                             {
-                                h.Username("guest");
-                                h.Password("guest");
-                            });
-
-                            cfg.ReceiveEndpoint("delete-contact-queue", e =>
-                            {
-                                e.ConfigureConsumer<RemoveContactConsumer>(context);
+                                cfg.ConfigureEndpoints(context);
                             });
                         });
-                    });
+                        services.AddLogging(builder => {
+                            builder.AddConsole();
+                            builder.SetMinimumLevel(LogLevel.Debug);
+                        });
+                    })
+                    .Build();
 
-                    services.AddLogging();
-                    services.AddHostedService<Worker>();
-                })
-                .Build();
+                await _host.StartAsync(new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token);
 
-            await _host.StartAsync();
-
-            _scope = _host.Services.CreateScope();
-            _bus = _scope.ServiceProvider.GetRequiredService<IBus>();
-            _logger = _scope.ServiceProvider.GetRequiredService<ILogger<Worker>>();
+                _scope = _host.Services.CreateScope();
+                _scope.ServiceProvider.GetRequiredService<IBus>();
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Erro durante o SetUp: {ex.Message}");
+            }
         }
 
         [Test]
@@ -59,7 +59,8 @@ namespace TCFiapConsumerDeleteContact.Tests.IntegrationTests
             // Arrange
             var contactId = Guid.NewGuid();
             var loggerMock = new Mock<ILogger<RemoveContactConsumer>>();
-            var consumer = new RemoveContactConsumer(loggerMock.Object);
+            var contactRepositoryMock = new Mock<IContactRepository>();
+            var consumer = new RemoveContactConsumer(loggerMock.Object, contactRepositoryMock.Object);
 
             var consumeContextMock = new Mock<ConsumeContext<RemoveContactMessage>>();
             consumeContextMock.Setup(x => x.Message).Returns(new RemoveContactMessage { ContactId = contactId });
@@ -82,9 +83,9 @@ namespace TCFiapConsumerDeleteContact.Tests.IntegrationTests
         public async Task TearDown()
         {
             await _host.StopAsync();
-
             _host.Dispose();
-            _scope.Dispose();
+
+            _scope?.Dispose();
         }
     }
 }

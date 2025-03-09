@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TCFiapConsumerDeleteContact.API;
 using TCFiapConsumerDeleteContact.API.Model;
+using TechChallenge.SDK.Persistence;
 
 namespace TCFiapConsumerDeleteContact.Tests.UnitTests
 {
@@ -11,13 +12,15 @@ namespace TCFiapConsumerDeleteContact.Tests.UnitTests
     {
         private RemoveContactConsumer _consumer;
         private Mock<ILogger<RemoveContactConsumer>> _loggerMock;
+        private Mock<IContactRepository> _contactRepositoryMock;
         private Mock<ConsumeContext<RemoveContactMessage>> _consumeContextMock;
 
         [SetUp]
         public void SetUp()
         {
             _loggerMock = new Mock<ILogger<RemoveContactConsumer>>();
-            _consumer = new RemoveContactConsumer(_loggerMock.Object);
+            _contactRepositoryMock = new Mock<IContactRepository>();
+            _consumer = new RemoveContactConsumer(_loggerMock.Object, _contactRepositoryMock.Object);
             _consumeContextMock = new Mock<ConsumeContext<RemoveContactMessage>>();
         }
 
