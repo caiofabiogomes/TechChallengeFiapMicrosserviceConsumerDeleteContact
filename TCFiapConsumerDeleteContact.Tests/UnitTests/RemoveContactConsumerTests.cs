@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TCFiapConsumerDeleteContact.API;
 using TCFiapConsumerDeleteContact.API.Model;
+using TechChallenge.SDK.Models;
 using TechChallenge.SDK.Persistence;
 
 namespace TCFiapConsumerDeleteContact.Tests.UnitTests
@@ -25,7 +26,72 @@ namespace TCFiapConsumerDeleteContact.Tests.UnitTests
         }
 
         [Test]
-        public async Task Consume_DeveLogarMensagemCorretamente()
+        public async Task Consume_WhenContactExists_ShouldDeleteContactAndLogSuccess()
+        {
+            // Arrange
+            var contactId = Guid.NewGuid();
+            var message = new RemoveContactMessage { ContactId = contactId };
+
+            _consumeContextMock.Setup(c => c.Message).Returns(message);
+            var fakeContact = new Contact { Id = contactId };
+            _contactRepositoryMock.Setup(r => r.GetByIdAsync(contactId))
+                .ReturnsAsync(fakeContact);
+
+            // Act
+            await _consumer.Consume(_consumeContextMock.Object);
+
+            // Assert
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Recebida solicitação para deletar o contato com ID: {contactId}")),
+                    null,
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+
+            _contactRepositoryMock.Verify(r => r.DeleteAsync(fakeContact), Times.Once);
+
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Contato {contactId} removido com sucesso!")),
+                    null,
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+        }
+
+        [Test]
+        public async Task Consume_WhenContactDoesNotExist_ShouldLogWarningAndNotDeleteContact()
+        {
+            // Arrange
+            var contactId = Guid.NewGuid();
+            var message = new RemoveContactMessage { ContactId = contactId };
+
+            _consumeContextMock.Setup(c => c.Message).Returns(message);
+            _contactRepositoryMock.Setup(r => r.GetByIdAsync(contactId))
+                .ReturnsAsync((Contact)null);
+
+            // Act
+            await _consumer.Consume(_consumeContextMock.Object);
+
+            // Assert
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Contato {contactId} não encontrado!")),
+                    null,
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+
+            _contactRepositoryMock.Verify(r => r.DeleteAsync(It.IsAny<Contact>()), Times.Never);
+        }
+
+
+        [Test]
+        public async Task Consume_WhenCalled_ShouldLogReceivedMessage()
         {
             // Arrange
             var message = new RemoveContactMessage { ContactId = Guid.NewGuid() };
