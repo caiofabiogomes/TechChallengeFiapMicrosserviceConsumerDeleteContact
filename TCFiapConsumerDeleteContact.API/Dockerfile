@@ -1,28 +1,36 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
+# Stage: base – imagem de runtime
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
-USER $APP_UID
 WORKDIR /app
 
-
-# This stage is used to build the service project
+# Stage: build – utiliza a imagem do SDK para compilar o projeto
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["TechChallengeFiapMicrosserviceConsumerDeleteContact/TechChallengeFiapMicrosserviceConsumerDeleteContact.csproj", "TechChallengeFiapMicrosserviceConsumerDeleteContact/"]
-RUN dotnet restore "./TechChallengeFiapMicrosserviceConsumerDeleteContact/TechChallengeFiapMicrosserviceConsumerDeleteContact.csproj"
-COPY . .
-WORKDIR "/src/TechChallengeFiapMicrosserviceConsumerDeleteContact"
-RUN dotnet build "./TechChallengeFiapMicrosserviceConsumerDeleteContact.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
+# Copia o NuGet.config (que referencia o /src/LocalPackages)
+COPY NuGet.config .
+
+# Copia a pasta LocalPackages para que o restore encontre os pacotes locais
+COPY LocalPackages ./LocalPackages
+
+# Copia o arquivo de projeto da API
+COPY ["TCFiapConsumerDeleteContact.API.csproj", "./"]
+RUN dotnet restore "TCFiapConsumerDeleteContact.API.csproj"
+
+# Copia todo o restante do código para o container
+COPY . .
+
+# Define o diretório de trabalho para o projeto da API e compila
+WORKDIR /src
+RUN dotnet build "TCFiapConsumerDeleteContact.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Stage: publish – publica a aplicação para produção
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./TechChallengeFiapMicrosserviceConsumerDeleteContact.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "TCFiapConsumerDeleteContact.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+# Stage final – constrói a imagem de runtime
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "TechChallengeFiapMicrosserviceConsumerDeleteContact.dll"]
+ENTRYPOINT ["dotnet", "TCFiapConsumerDeleteContact.API.dll"]
