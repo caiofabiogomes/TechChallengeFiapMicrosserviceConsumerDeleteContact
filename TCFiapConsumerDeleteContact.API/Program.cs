@@ -22,6 +22,9 @@ var host = Host.CreateDefaultBuilder(args)
                 cfg.ReceiveEndpoint("delete-contact-queue", e =>
                 {
                     e.ConfigureConsumer<RemoveContactConsumer>(context);
+
+                    // DLQ Exchange 
+                    e.SetQueueArgument("x-dead-letter-exchange", "delete-contact-dlx-exchange");
                 });
             });
         });

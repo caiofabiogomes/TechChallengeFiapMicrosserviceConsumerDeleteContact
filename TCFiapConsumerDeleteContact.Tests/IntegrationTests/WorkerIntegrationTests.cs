@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TCFiapConsumerDeleteContact.API;
 using TCFiapConsumerDeleteContact.API.Model;
-using TechChallenge.SDK.Models;
-using TechChallenge.SDK.Persistence;
+using TechChallenge.SDK.Domain.Models;
+using TechChallenge.SDK.Infrastructure.Persistence;
 
 namespace TCFiapConsumerDeleteContact.Tests.IntegrationTests
 {
