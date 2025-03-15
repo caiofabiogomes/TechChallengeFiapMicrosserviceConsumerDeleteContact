@@ -25,6 +25,7 @@ var host = Host.CreateDefaultBuilder(args)
 
                     // DLQ Exchange 
                     e.SetQueueArgument("x-dead-letter-exchange", "delete-contact-dlx-exchange");
+                    e.SetQueueArgument("x-dead-letter-routing-key", "delete-contact-dlx");
                 });
             });
         });
