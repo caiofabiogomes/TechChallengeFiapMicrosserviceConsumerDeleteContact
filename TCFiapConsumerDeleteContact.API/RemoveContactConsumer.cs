@@ -1,5 +1,5 @@
 ﻿using MassTransit;
-using TCFiapConsumerDeleteContact.API.Model;
+using TechChallenge.SDK.Infrastructure.Message;
 using TechChallenge.SDK.Infrastructure.Persistence;
 
 namespace TCFiapConsumerDeleteContact.API
