@@ -11,11 +11,14 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
+
     runs-on: ubuntu-latest
+
     env:
       Solution_Name: TechChallengeFiapMicrosserviceConsumerDeleteContact.sln
-      ProjectTest_Name: TCFiapConsumerDeleteContact.Tests/TCFiapConsumerDeleteContact.Tests.csproj
+      ProjectTest_Name:  TCFiapConsumerDeleteContact.Tests/TCFiapConsumerDeleteContact.Tests.csproj
       IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,36 +30,12 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Configure NuGet feeds
-        shell: bash
-        env:
-          SECRET_NUGET_PACKAGES: ${{ secrets.SECRET_NUGET_PACKAGES }}
-        run: |
-          cat <<EOF > nuget.config
-          <?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <packageSources>
-              <add key="GitHub" value="https://nuget.pkg.github.com/caiofabiogomes/index.json" />
-              <add key="GitHubDownload" value="https://nuget.pkg.github.com/caiofabiogomes/download/techchallengefiap/index.json" />
-            </packageSources>
-            <packageSourceCredentials>
-              <GitHub>
-                <add key="Username" value="ErickGoldberg" />
-                <add key="ClearTextPassword" value="$SECRET_NUGET_PACKAGES" />
-              </GitHub>
-              <GitHubDownload>
-                <add key="Username" value="ErickGoldberg" />
-                <add key="ClearTextPassword" value="$SECRET_NUGET_PACKAGES" />
-              </GitHubDownload>
-            </packageSourceCredentials>
-          </configuration>
-
       - name: Restore and Build
         run: |
-          dotnet restore ${{ env.Solution_Name }} --configfile nuget.config
+          dotnet restore ${{ env.Solution_Name }}
           dotnet build ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-restore
 
-      - name: Execute tests
+      - name: Execute  tests
         run: dotnet test ${{ env.ProjectTest_Name }} --configuration ${{ matrix.configuration }}
 
       - name: Login to Docker Hub
@@ -69,7 +48,7 @@ jobs:
       - name: Build and Push Docker Image (Only Release)
         if: matrix.configuration == 'Release'
         run: |
-          docker build --build-arg ARG_SECRET_NUGET_PACKAGES=${{ secrets.SECRET_NUGET_PACKAGES }} -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
           docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.IMAGE_NAME }}:latest
