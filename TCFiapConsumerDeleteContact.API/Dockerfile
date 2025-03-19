@@ -6,27 +6,15 @@ ARG ARG_SECRET_NUGET_PACKAGES
 
 COPY . ./
 
-# Criar um arquivo nuget.config com clear text credentials para ambos os feeds
-RUN echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<configuration>
-  <packageSources>
-    <add key=\"github\" value=\"https://nuget.pkg.github.com/caiofabiogomes/index.json\" />
-    <add key=\"github-techchallengefiap\" value=\"https://nuget.pkg.github.com/caiofabiogomes/download/techchallengefiap/index.json\" />
-  </packageSources>
-  <packageSourceCredentials>
-    <github>
-      <add key=\"Username\" value=\"ErickGoldberg\" />
-      <add key=\"ClearTextPassword\" value=\"$ARG_SECRET_NUGET_PACKAGES\" />
-    </github>
-    <github-techchallengefiap>
-      <add key=\"Username\" value=\"ErickGoldberg\" />
-      <add key=\"ClearTextPassword\" value=\"$ARG_SECRET_NUGET_PACKAGES\" />
-    </github-techchallengefiap>
-  </packageSourceCredentials>
-</configuration>" > nuget.config
+# Adicionar a fonte privada do GitHub Packages
+RUN dotnet nuget remove source github || echo "Fonte não encontrada, continuando..."
+RUN dotnet nuget add source "https://nuget.pkg.github.com/caiofabiogomes/index.json" \
+    --name github \
+    --username ErickGoldberg \
+    --password ${{ secrets.SECRET_NUGET_PACKAGES }} \
+    --store-password-in-clear-text
 
-# Usar o nuget.config para restaurar os pacotes
-RUN dotnet restore --configfile nuget.config
+RUN dotnet restore
 
 RUN dotnet publish TCFiapConsumerDeleteContact.API.csproj -c Release -o out
 
