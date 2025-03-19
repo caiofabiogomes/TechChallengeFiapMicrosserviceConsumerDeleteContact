@@ -11,14 +11,11 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
-
     runs-on: ubuntu-latest
-
     env:
       Solution_Name: TechChallengeFiapMicrosserviceConsumerDeleteContact.sln
       ProjectTest_Name: TCFiapConsumerDeleteContact.Tests/TCFiapConsumerDeleteContact.Tests.csproj
       IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,9 +27,29 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Configure NuGet feeds
+        run: |
+          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+          <configuration>
+            <packageSources>
+              <add key=\"GitHub\" value=\"https://nuget.pkg.github.com/caiofabiogomes/index.json\" />
+              <add key=\"GitHubDownload\" value=\"https://nuget.pkg.github.com/caiofabiogomes/download/techchallengefiap/index.json\" />
+            </packageSources>
+            <packageSourceCredentials>
+              <GitHub>
+                <add key=\"Username\" value=\"ErickGoldberg\" />
+                <add key=\"ClearTextPassword\" value=\"${{ secrets.SECRET_NUGET_PACKAGES }}\" />
+              </GitHub>
+              <GitHubDownload>
+                <add key=\"Username\" value=\"ErickGoldberg\" />
+                <add key=\"ClearTextPassword\" value=\"${{ secrets.SECRET_NUGET_PACKAGES }}\" />
+              </GitHubDownload>
+            </packageSourceCredentials>
+          </configuration>" > nuget.config
+
       - name: Restore and Build
         run: |
-          dotnet restore ${{ env.Solution_Name }}
+          dotnet restore ${{ env.Solution_Name }} --configfile nuget.config
           dotnet build ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-restore
 
       - name: Execute tests
