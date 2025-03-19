@@ -5,7 +5,17 @@ using TechChallenge.SDK;
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
-        services.RegisterSdkModule(hostContext.Configuration);
+        Task.Delay(15000).Wait();
+
+        var connectionString = Environment.GetEnvironmentVariable("CONNECTION_DATABASE") ??
+                               hostContext.Configuration.GetConnectionString("DefaultConnection");
+
+        //var envHostRabbitMqServer = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+
+        if(string.IsNullOrWhiteSpace(connectionString))
+            throw new ArgumentNullException("Database connection cannot be empty.");
+
+        services.RegisterSdkModule(connectionString);
 
         services.AddMassTransit(x =>
         {
@@ -13,6 +23,8 @@ var host = Host.CreateDefaultBuilder(args)
 
             x.UsingRabbitMq((context, cfg) =>
             {
+                // cfg.Host(envHostRabbitMqServer);
+
                 cfg.Host("rabbitmq://localhost", h =>
                 {
                     h.Username("guest");

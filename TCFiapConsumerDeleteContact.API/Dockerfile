@@ -1,36 +1,28 @@
-# Stage: base – imagem de runtime
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
-WORKDIR /app
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /App
 
-# Stage: build – utiliza a imagem do SDK para compilar o projeto
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
+# Definir argumento para a senha do NuGet
+ARG ARG_SECRET_NUGET_PACKAGES
 
-# Copia o NuGet.config (que referencia o /src/LocalPackages)
-COPY NuGet.config .
+COPY . ./
 
-# Copia a pasta LocalPackages para que o restore encontre os pacotes locais
-COPY LocalPackages ./LocalPackages
+# Adicionar a fonte privada do GitHub Packages
+RUN dotnet nuget remove source github || echo "Fonte não encontrada, continuando..."
+RUN dotnet nuget add source "https://nuget.pkg.github.com/caiofabiogomes/index.json" \
+    --name github \
+    --username ErickGoldberg \
+    --password "$ARG_SECRET_NUGET_PACKAGES" \
+    --store-password-in-clear-text
 
-# Copia o arquivo de projeto da API
-COPY ["TCFiapConsumerDeleteContact.API.csproj", "./"]
-RUN dotnet restore "TCFiapConsumerDeleteContact.API.csproj"
+RUN dotnet restore
 
-# Copia todo o restante do código para o container
-COPY . .
+RUN dotnet publish TCFiapConsumerDeleteContact.API.csproj -c Release -o out
 
-# Define o diretório de trabalho para o projeto da API e compila
-WORKDIR /src
-RUN dotnet build "TCFiapConsumerDeleteContact.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /App
 
-# Stage: publish – publica a aplicação para produção
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "TCFiapConsumerDeleteContact.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+COPY --from=build-env /App/out ./
 
-# Stage final – constrói a imagem de runtime
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
+EXPOSE 8080
+
 ENTRYPOINT ["dotnet", "TCFiapConsumerDeleteContact.API.dll"]
