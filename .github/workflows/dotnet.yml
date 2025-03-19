@@ -30,6 +30,15 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Configure NuGet credentials for additional feed
+        run: |
+          dotnet nuget remove source github-techchallengefiap || echo "Fonte adicional não encontrada, continuando..."
+          dotnet nuget add source "https://nuget.pkg.github.com/caiofabiogomes/download/techchallengefiap/index.json" \
+            --name github-techchallengefiap \
+            --username ErickGoldberg \
+            --password ${{ secrets.SECRET_NUGET_PACKAGES }} \
+            --store-password-in-clear-text
+
       - name: Restore and Build
         run: |
           dotnet restore ${{ env.Solution_Name }}
