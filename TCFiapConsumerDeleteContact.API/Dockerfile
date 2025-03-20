@@ -11,7 +11,7 @@ RUN dotnet nuget remove source github || echo "Fonte não encontrada, continuand
 RUN dotnet nuget add source "https://nuget.pkg.github.com/caiofabiogomes/index.json" \
     --name github \
     --username ErickGoldberg \
-    --password ${{ ARG_SECRET_NUGET_PACKAGES }} \
+    --password "$ARG_SECRET_NUGET_PACKAGES" \
     --store-password-in-clear-text
 
 RUN dotnet restore
