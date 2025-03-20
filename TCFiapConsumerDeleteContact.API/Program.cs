@@ -10,8 +10,6 @@ var host = Host.CreateDefaultBuilder(args)
         var connectionString = Environment.GetEnvironmentVariable("CONNECTION_DATABASE") ??
                                hostContext.Configuration.GetConnectionString("DefaultConnection");
 
-        //var envHostRabbitMqServer = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
-
         if(string.IsNullOrWhiteSpace(connectionString))
             throw new ArgumentNullException("Database connection cannot be empty.");
 
@@ -23,8 +21,6 @@ var host = Host.CreateDefaultBuilder(args)
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                // cfg.Host(envHostRabbitMqServer);
-
                 cfg.Host("rabbitmq://localhost", h =>
                 {
                     h.Username("guest");
