@@ -41,7 +41,6 @@ jobs:
             --password ${{ secrets.SECRET_NUGET_PACKAGES }} \
             --store-password-in-clear-text
 
-
       - name: Restore and Build
         run: |
           dotnet restore ${{ env.Solution_Name }}
