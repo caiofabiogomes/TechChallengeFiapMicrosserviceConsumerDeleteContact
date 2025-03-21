@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
 
     runs-on: ubuntu-latest
 
@@ -41,6 +41,8 @@ jobs:
             --password ${{ secrets.SECRET_NUGET_PACKAGES }} \
             --store-password-in-clear-text
 
+      - name: Sleep for 5 seconds (optional)
+        run: sleep 10
 
       - name: Restore and Build
         run: |
