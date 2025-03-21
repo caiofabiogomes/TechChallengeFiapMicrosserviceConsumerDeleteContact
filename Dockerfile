@@ -1,17 +1,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /App
 
+COPY . ./
 # Definir argumento para a senha do NuGet
 ARG ARG_SECRET_NUGET_PACKAGES
-
-COPY . ./
-
 # Adicionar a fonte privada do GitHub Packages
 RUN dotnet nuget remove source github || echo "Fonte não encontrada, continuando..."
 RUN dotnet nuget add source "https://nuget.pkg.github.com/caiofabiogomes/index.json" \
     --name github \
     --username ErickGoldberg \
-    --password "$ARG_SECRET_NUGET_PACKAGES" \
+    --password "${ARG_SECRET_NUGET_PACKAGES}" \
     --store-password-in-clear-text
 
 RUN dotnet restore
