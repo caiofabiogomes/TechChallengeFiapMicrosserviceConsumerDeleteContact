@@ -15,11 +15,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    env:
-      Solution_Name: TechChallengeFiapMicrosserviceConsumerDeleteContact.sln
-      ProjectTest_Name:  TCFiapConsumerDeleteContact.Tests/TCFiapConsumerDeleteContact.Tests.csproj
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,6 +36,7 @@ jobs:
             --username caiofabiogomes \
             --password ${{ secrets.SECRET_NUGET_PACKAGES }} \
             --store-password-in-clear-text
+
 
       - name: Restore and Build
         run: |
