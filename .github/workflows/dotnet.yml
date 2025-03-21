@@ -40,7 +40,7 @@ jobs:
             --username caiofabiogomes \
             --password ${{ secrets.SECRET_NUGET_PACKAGES }} \
             --store-password-in-clear-text
-  	  
+      
       - name: Sleep for 5 seconds (optional)
         run: sleep 10
 
