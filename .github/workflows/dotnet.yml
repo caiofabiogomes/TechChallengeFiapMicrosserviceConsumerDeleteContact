@@ -1,5 +1,6 @@
 name: Automated Workflow | Tech Challenge - FIAP
 
+
 on:
   push:
     branches: [ "master" ]
