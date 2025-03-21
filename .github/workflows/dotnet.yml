@@ -40,6 +40,7 @@ jobs:
 
       - name: Restore and Build
         run: |
+          sleep 5
           dotnet restore ${{ env.Solution_Name }}
           dotnet build ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-restore
 
