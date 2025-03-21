@@ -41,6 +41,17 @@ jobs:
             --password ${{ secrets.SECRET_NUGET_PACKAGES }} \
             --store-password-in-clear-text
 
+      - name: Sleep for 5 seconds (optional)
+        run: sleep 10
+
+      - name: Restore and Build
+        run: |
+          dotnet restore ${{ env.Solution_Name }}
+          dotnet build ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-restore
+
+      - name: Execute  tests
+        run: dotnet test ${{ env.ProjectTest_Name }} --configuration ${{ matrix.configuration }}
+
       - name: Login to Docker Hub
         if: matrix.configuration == 'Release'
         uses: docker/login-action@v3
