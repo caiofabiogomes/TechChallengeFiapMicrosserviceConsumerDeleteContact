@@ -13,6 +13,9 @@ var host = Host.CreateDefaultBuilder(args)
         if(string.IsNullOrWhiteSpace(connectionString))
             throw new ArgumentNullException("Database connection cannot be empty.");
 
+
+        var envHostRabbitMqServer = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+
         services.RegisterSdkModule(connectionString);
 
         services.AddMassTransit(x =>
@@ -21,19 +24,11 @@ var host = Host.CreateDefaultBuilder(args)
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("rabbitmq://localhost", h =>
-                {
-                    h.Username("guest");
-                    h.Password("guest");
-                });
+                cfg.Host(envHostRabbitMqServer);
 
                 cfg.ReceiveEndpoint("delete-contact-queue", e =>
                 {
                     e.ConfigureConsumer<RemoveContactConsumer>(context);
-
-                    // DLQ Exchange 
-                    e.SetQueueArgument("x-dead-letter-exchange", "delete-contact-dlx-exchange");
-                    e.SetQueueArgument("x-dead-letter-routing-key", "delete-contact-dlx");
                 });
             });
         });
