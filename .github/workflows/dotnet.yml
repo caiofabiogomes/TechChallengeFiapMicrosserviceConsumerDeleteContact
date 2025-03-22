@@ -13,6 +13,7 @@ jobs:
         configuration: [Release]
 
     runs-on: ubuntu-latest
+    
 
     env:
       Solution_Name: TechChallengeFiapMicrosserviceConsumerDeleteContact.sln
