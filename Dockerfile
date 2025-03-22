@@ -6,11 +6,7 @@ COPY . ./
 ARG ARG_SECRET_NUGET_PACKAGES
 # Adicionar a fonte privada do GitHub Packages
 RUN dotnet nuget remove source github || echo "Fonte não encontrada, continuando..."
-RUN dotnet nuget add source "https://nuget.pkg.github.com/caiofabiogomes/index.json" \
-    --name github \
-    --username caiofabiogomes \
-    --password "${ARG_SECRET_NUGET_PACKAGES}" \
-    --store-password-in-clear-text
+RUN dotnet nuget add source "https://nuget.pkg.github.com/caiofabiogomes/index.json" 
 
 RUN dotnet restore
 
